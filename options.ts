@@ -41,6 +41,7 @@ export const config = mkOptions(configFile, {
          },
          clock: {
             format: "%b %d  %H:%M",
+            rotate: false,
             "on-click": "toggle-calendar" as string | null,
             "on-click-right": null as string | null,
             "on-click-middle": null as string | null,
