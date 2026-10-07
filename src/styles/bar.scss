@@ -1,4 +1,6 @@
-window#bar {
+// the ghost reuses the bar module styles, overridden further down
+window#bar,
+window#barghost {
   all: unset;
   color: $fg0;
   font-size: $font-size;
@@ -340,6 +342,29 @@ window#barshadow {
           rgba($bar-shadow-color, $bar-shadow-opacity);
       }
     }
+  }
+}
+
+window#barghost {
+  all: unset;
+  background: transparent;
+  color: $fg0;
+  font-size: $font-size;
+  opacity: 0.5;
+
+  .main {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    @if $bar-vertical {
+      min-width: $bar-size;
+    } @else {
+      min-height: $bar-size;
+    }
+  }
+
+  .ghost-hidden {
+    opacity: 0;
   }
 }
 

@@ -1,4 +1,5 @@
 import {
+  BarGhostWindow,
   BarShadowWindow,
   BarTriggerWindow,
   BarWindow,
@@ -27,6 +28,7 @@ export const windows_names = {
   bar: "bar",
   bar_shadow: "barshadow",
   bar_trigger: "bartrigger",
+  bar_ghost: "barghost",
   applauncher: "applauncher",
   notifications_popup: "notificationspopup",
   quicksettings: "quicksettings",
@@ -48,6 +50,7 @@ export function hideWindows() {
     windows_names.bar,
     windows_names.bar_shadow,
     windows_names.bar_trigger,
+    windows_names.bar_ghost,
     windows_names.osd,
   ];
 
@@ -92,6 +95,12 @@ export function windows() {
           gdkmonitor={monitor}
           $={(self) => onCleanup(() => self.destroy())}
         />
+        {config.bar.autohide && config.bar["autohide-ghost"] && (
+          <BarGhostWindow
+            gdkmonitor={monitor}
+            $={(self) => onCleanup(() => self.destroy())}
+          />
+        )}
         {config.bar.autohide && (
           <BarTriggerWindow
             gdkmonitor={monitor}

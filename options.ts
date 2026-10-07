@@ -11,6 +11,7 @@ export const config = mkOptions(configFile, {
       size: 48,
       position: "top" as "top" | "bottom" | "left" | "right",
       autohide: false,
+      "autohide-ghost": false,
       modules: {
          start: ["launcher", "workspaces"],
          center: ["clock"],

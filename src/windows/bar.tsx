@@ -16,6 +16,20 @@ const autohideBars = new Map<
    Gdk.Monitor,
    { reveal: () => void; scheduleHide: () => void }
 >();
+const ghosts = new Map<Gdk.Monitor, Astal.Window>();
+
+function anchor() {
+   switch (position) {
+      case "top":
+         return TOP | LEFT | RIGHT;
+      case "bottom":
+         return BOTTOM | LEFT | RIGHT;
+      case "right":
+         return RIGHT | BOTTOM | TOP;
+      case "left":
+         return LEFT | BOTTOM | TOP;
+   }
+}
 
 export function BarWindow({
    gdkmonitor,
@@ -70,6 +84,7 @@ export function BarWindow({
       hideTimer?.cancel();
       hideTimer = null;
       bar.show();
+      ghosts.get(gdkmonitor)?.hide();
    }
 
    function scheduleHide() {
@@ -78,6 +93,7 @@ export function BarWindow({
          hideTimer = null;
          if (hovered || windowsVisible.get().length > 0) return;
          bar.hide();
+         ghosts.get(gdkmonitor)?.show();
       });
    }
 
@@ -87,19 +103,6 @@ export function BarWindow({
          hideTimer?.cancel();
          autohideBars.delete(gdkmonitor);
       });
-   }
-
-   function anchor() {
-      switch (position) {
-         case "top":
-            return TOP | LEFT | RIGHT;
-         case "bottom":
-            return BOTTOM | LEFT | RIGHT;
-         case "right":
-            return RIGHT | BOTTOM | TOP;
-         case "left":
-            return LEFT | BOTTOM | TOP;
-      }
    }
 
    return (
@@ -133,6 +136,37 @@ export function BarWindow({
             />
          )}
          <BarModule gdkmonitor={gdkmonitor} />
+      </window>
+   );
+}
+
+// translucent, click-through workspaces where the hidden bar would show them
+export function BarGhostWindow({
+   gdkmonitor,
+   $,
+}: JSX.IntrinsicElements["window"] & { gdkmonitor: Gdk.Monitor }) {
+   return (
+      <window
+         visible
+         name={windows_names.bar_ghost}
+         namespace={windows_names.bar_ghost}
+         class={windows_names.bar_ghost}
+         gdkmonitor={gdkmonitor}
+         exclusivity={Astal.Exclusivity.IGNORE}
+         layer={Astal.Layer.TOP}
+         anchor={anchor()}
+         application={app}
+         $={(self) => {
+            ghosts.set(gdkmonitor, self);
+            onCleanup(() => ghosts.delete(gdkmonitor));
+            if ($) $(self);
+            self
+               .get_native()
+               ?.get_surface()
+               ?.set_input_region(new giCairo.Region());
+         }}
+      >
+         <BarModule gdkmonitor={gdkmonitor} ghost />
       </window>
    );
 }

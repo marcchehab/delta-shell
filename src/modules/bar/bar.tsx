@@ -31,8 +31,13 @@ export const orientation = isVertical
 
 export function BarModule({
    gdkmonitor,
+   ghost = false,
    $,
-}: JSX.IntrinsicElements["window"] & { gdkmonitor: Gdk.Monitor }) {
+}: JSX.IntrinsicElements["window"] & {
+   gdkmonitor: Gdk.Monitor;
+   // lay out the full bar so positions match, but show only the workspaces
+   ghost?: boolean;
+}) {
    const Bar_Items = {
       launcher: () => <Launcher />,
       workspaces: () => <Workspaces gdkmonitor={gdkmonitor} />,
@@ -70,7 +75,13 @@ export function BarModule({
          }
          const result = Widget();
          if (result !== null && result !== undefined) {
-            items.push(result);
+            items.push(
+               ghost && baritem !== "workspaces" ? (
+                  <box class={"ghost-hidden"}>{result}</box>
+               ) : (
+                  result
+               ),
+            );
          }
       }
 
