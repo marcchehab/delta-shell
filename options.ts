@@ -10,6 +10,7 @@ export const config = mkOptions(configFile, {
    bar: {
       size: 48,
       position: "top" as "top" | "bottom" | "left" | "right",
+      autohide: false,
       modules: {
          start: ["launcher", "workspaces"],
          center: ["clock"],

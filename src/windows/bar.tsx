@@ -1,14 +1,21 @@
 import { windows_names } from "@/windows";
-import { Astal, Gdk } from "ags/gtk4";
+import { Astal, Gdk, Gtk } from "ags/gtk4";
 import { BarModule, isVertical } from "../modules/bar/bar";
 import { config, theme } from "@/options";
 import { createState, onCleanup } from "gnim";
 import app from "ags/gtk4/app";
 import giCairo from "cairo";
-const { position, modules } = config.bar;
+import { timeout } from "ags/time";
+const { position, modules, autohide } = config.bar;
 const { spacing } = theme.bar;
 const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor;
 const [windowsVisible, windowsVisible_set] = createState<string[]>([]);
+
+// autohide: the trigger window on each monitor's edge reveals that monitor's bar
+const autohideBars = new Map<
+   Gdk.Monitor,
+   { reveal: () => void; scheduleHide: () => void }
+>();
 
 export function BarWindow({
    gdkmonitor,
@@ -51,9 +58,36 @@ export function BarWindow({
       bar.set_layer(
          newVisible.length > 0 ? Astal.Layer.OVERLAY : Astal.Layer.TOP,
       );
+      if (autohide && newVisible.length === 0) scheduleHide();
    });
 
    onCleanup(() => app.disconnect(appconnect));
+
+   let hovered = false;
+   let hideTimer: ReturnType<typeof timeout> | null = null;
+
+   function reveal() {
+      hideTimer?.cancel();
+      hideTimer = null;
+      bar.show();
+   }
+
+   function scheduleHide() {
+      hideTimer?.cancel();
+      hideTimer = timeout(400, () => {
+         hideTimer = null;
+         if (hovered || windowsVisible.get().length > 0) return;
+         bar.hide();
+      });
+   }
+
+   if (autohide) {
+      autohideBars.set(gdkmonitor, { reveal, scheduleHide });
+      onCleanup(() => {
+         hideTimer?.cancel();
+         autohideBars.delete(gdkmonitor);
+      });
+   }
 
    function anchor() {
       switch (position) {
@@ -70,12 +104,14 @@ export function BarWindow({
 
    return (
       <window
-         visible
+         visible={!autohide}
          name={windows_names.bar}
          namespace={windows_names.bar}
          class={windows_names.bar}
          gdkmonitor={gdkmonitor}
-         exclusivity={Astal.Exclusivity.EXCLUSIVE}
+         exclusivity={
+            autohide ? Astal.Exclusivity.IGNORE : Astal.Exclusivity.EXCLUSIVE
+         }
          layer={Astal.Layer.TOP}
          anchor={anchor()}
          application={app}
@@ -84,7 +120,53 @@ export function BarWindow({
             if ($) $(self);
          }}
       >
+         {autohide && (
+            <Gtk.EventControllerMotion
+               onEnter={() => {
+                  hovered = true;
+                  reveal();
+               }}
+               onLeave={() => {
+                  hovered = false;
+                  scheduleHide();
+               }}
+            />
+         )}
          <BarModule gdkmonitor={gdkmonitor} />
+      </window>
+   );
+}
+
+export function BarTriggerWindow({
+   gdkmonitor,
+   $,
+}: JSX.IntrinsicElements["window"] & { gdkmonitor: Gdk.Monitor }) {
+   const edge = { top: TOP, bottom: BOTTOM, left: LEFT, right: RIGHT }[
+      position
+   ];
+   const span =
+      position === "top" || position === "bottom" ? LEFT | RIGHT : TOP | BOTTOM;
+
+   return (
+      <window
+         visible
+         name={windows_names.bar_trigger}
+         namespace={windows_names.bar_trigger}
+         class={windows_names.bar_trigger}
+         gdkmonitor={gdkmonitor}
+         exclusivity={Astal.Exclusivity.IGNORE}
+         layer={Astal.Layer.TOP}
+         anchor={edge | span}
+         application={app}
+         $={(self) => {
+            if ($) $(self);
+         }}
+      >
+         <box>
+            <Gtk.EventControllerMotion
+               onEnter={() => autohideBars.get(gdkmonitor)?.reveal()}
+            />
+         </box>
       </window>
    );
 }

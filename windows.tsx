@@ -1,4 +1,8 @@
-import { BarShadowWindow, BarWindow } from "./src/windows/bar";
+import {
+  BarShadowWindow,
+  BarTriggerWindow,
+  BarWindow,
+} from "./src/windows/bar";
 import app from "ags/gtk4/app";
 import { config, theme } from "./options";
 import { createBinding, For, onCleanup, This } from "ags";
@@ -22,6 +26,7 @@ import { AppLauncherWindow } from "./src/windows/applauncher";
 export const windows_names = {
   bar: "bar",
   bar_shadow: "barshadow",
+  bar_trigger: "bartrigger",
   applauncher: "applauncher",
   notifications_popup: "notificationspopup",
   quicksettings: "quicksettings",
@@ -42,6 +47,7 @@ export function hideWindows() {
   const ignore = [
     windows_names.bar,
     windows_names.bar_shadow,
+    windows_names.bar_trigger,
     windows_names.osd,
   ];
 
@@ -86,7 +92,13 @@ export function windows() {
           gdkmonitor={monitor}
           $={(self) => onCleanup(() => self.destroy())}
         />
-        {theme.shadow && (
+        {config.bar.autohide && (
+          <BarTriggerWindow
+            gdkmonitor={monitor}
+            $={(self) => onCleanup(() => self.destroy())}
+          />
+        )}
+        {theme.shadow && !config.bar.autohide && (
           <BarShadowWindow
             gdkmonitor={monitor}
             $={(self) => onCleanup(() => self.destroy())}

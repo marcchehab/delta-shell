@@ -342,3 +342,15 @@ window#barshadow {
     }
   }
 }
+
+window#bartrigger {
+  all: unset;
+  background: transparent;
+
+  // fully transparent surfaces never get committed and sit at 200px
+  box {
+    min-width: 2px;
+    min-height: 2px;
+    background: rgba(0, 0, 0, 0.01);
+  }
+}
