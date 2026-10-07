@@ -78,7 +78,15 @@ const variables = () => [
    $("bar-button-border-width", `${bar.button.border.width}px`),
    $("bar-button-border-color", `${bar.button.border.color}`),
    $("bar-button-opacity", `${bar.button.opacity}`),
-   $("bar-button-padding", `${toCssValue(bar.button.padding)}`),
+   // theme padding is [vertical, horizontal] for a horizontal bar; swap so it pads along a vertical bar too
+   $(
+      "bar-button-padding",
+      `${toCssValue(
+         isVertical && bar.button.padding.length === 2
+            ? [bar.button.padding[1], bar.button.padding[0]]
+            : bar.button.padding,
+      )}`,
+   ),
    $("bar-shadow-offset", `${toCssValue(bar.shadow.offset)}`),
    $("bar-shadow-blur", `${bar.shadow.blur}px`),
    $("bar-shadow-spread", `${bar.shadow.spread}px`),
