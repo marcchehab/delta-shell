@@ -66,6 +66,11 @@ export function Tray() {
                                  if (popovermenu.visible) {
                                     popovermenu.popdown();
                                  } else {
+                                    // rebuild from scratch: GtkPopoverMenu keeps stale
+                                    // submenu pages (duplicate stack child names) when
+                                    // apps like nm-applet regenerate their dbusmenu
+                                    popovermenu.set_menu_model(null);
+                                    popovermenu.set_menu_model(item.menuModel);
                                     popovermenu.popup();
                                  }
                               }
