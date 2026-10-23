@@ -43,12 +43,21 @@ export function Tray() {
                      class={"item"}
                      hexpand={isVertical}
                      $={(self) => {
+                        // the item (and its open menu) can vanish when the app quits
+                        // from that menu: release the hold on cleanup too
+                        let held = false;
+                        const setHeld = (h: boolean) => {
+                           if (h === held) return;
+                           held = h;
+                           holdBar(h);
+                        };
                         popovermenu.connect("notify::visible", ({ visible }) => {
                            self[visible ? "add_css_class" : "remove_css_class"](
                               "active",
                            );
-                           holdBar(visible);
+                           setHeld(visible);
                         });
+                        onCleanup(() => setHeld(false));
                      }}
                   >
                      <image
