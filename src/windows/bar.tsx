@@ -7,6 +7,7 @@ import app from "ags/gtk4/app";
 import giCairo from "cairo";
 import { timeout } from "ags/time";
 import { Workspaces } from "../modules/bar/items/workspaces";
+import { barHeld, onBarRelease } from "@/src/lib/barhold";
 const { position, modules, autohide } = config.bar;
 const { spacing } = theme.bar;
 const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor;
@@ -112,7 +113,12 @@ export function BarWindow({
       hideTimer?.cancel();
       hideTimer = timeout(delay, () => {
          hideTimer = null;
-         if (hovered || pillHovered || windowsVisible.get().length > 0)
+         if (
+            hovered ||
+            pillHovered ||
+            barHeld() ||
+            windowsVisible.get().length > 0
+         )
             return;
          bar.hide();
          barRevealed_set(false);
@@ -122,7 +128,9 @@ export function BarWindow({
 
    if (autohide) {
       autohideBars.set(gdkmonitor, { reveal, scheduleHide });
+      const unhold = onBarRelease(() => scheduleHide());
       onCleanup(() => {
+         unhold();
          hideTimer?.cancel();
          autohideBars.delete(gdkmonitor);
       });

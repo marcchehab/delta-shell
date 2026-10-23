@@ -5,6 +5,7 @@ import { createBinding, createState, For, onCleanup } from "ags";
 import BarItem from "@/src/widgets/baritem";
 import { config, theme } from "@/options";
 import { isVertical, orientation } from "../bar";
+import { holdBar } from "@/src/lib/barhold";
 
 export function Tray() {
    const conf = config.bar.modules.tray;
@@ -42,11 +43,12 @@ export function Tray() {
                      class={"item"}
                      hexpand={isVertical}
                      $={(self) => {
-                        popovermenu.connect("notify::visible", ({ visible }) =>
+                        popovermenu.connect("notify::visible", ({ visible }) => {
                            self[visible ? "add_css_class" : "remove_css_class"](
                               "active",
-                           ),
-                        );
+                           );
+                           holdBar(visible);
+                        });
                      }}
                   >
                      <image
