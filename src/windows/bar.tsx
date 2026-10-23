@@ -23,6 +23,17 @@ const [barRevealed, barRevealed_set] = createState(false);
 // the revealed pill keeps the bars up while hovered, like the bar itself
 let pillHovered = false;
 
+// `delta-shell bar-debug`: per-monitor state of the autohidden bars
+const barWindows = new Map<Gdk.Monitor, Astal.Window>();
+export function barDebug() {
+   return [...barWindows.entries()]
+      .map(([m, w]) => {
+         const surface = w.get_native()?.get_surface();
+         return `${m.connector}: visible=${w.visible} mapped=${w.get_mapped()} realized=${w.get_realized()} surfaceMapped=${surface?.get_mapped()} inAutohide=${autohideBars.has(m)}`;
+      })
+      .join("\n");
+}
+
 // hold-to-show: `peek start` reveals every bar after peek-delay, `peek stop` hides
 let peekTimer: ReturnType<typeof timeout> | null = null;
 
@@ -104,6 +115,11 @@ export function BarWindow({
    function reveal() {
       hideTimer?.cancel();
       hideTimer = null;
+      // quitting an app from its tray menu destroys the open popover, which
+      // leaves the bar's surface unmapped while GTK still counts it as shown;
+      // show() is then a no-op, so cycle it
+      if (bar.visible && !bar.get_native()?.get_surface()?.get_mapped())
+         bar.hide();
       bar.show();
       barRevealed_set(true);
       ghosts.get(gdkmonitor)?.hide();
@@ -151,6 +167,8 @@ export function BarWindow({
          application={app}
          $={(self) => {
             bar = self;
+            barWindows.set(gdkmonitor, self);
+            onCleanup(() => barWindows.delete(gdkmonitor));
             if ($) $(self);
          }}
       >

@@ -3,7 +3,7 @@ import ScreenRecorder from "./src/services/screenrecorder";
 import { windows_names } from "./windows";
 import { hasBarItem, toggleQsModule, toggleWindow } from "./src/lib/utils";
 import { config } from "./options";
-import { peek } from "./src/windows/bar";
+import { barDebug, peek } from "./src/windows/bar";
 const screenrecorder = ScreenRecorder.get_default();
 
 export default function request(
@@ -56,6 +56,8 @@ export default function request(
          case "screenrecord":
             screenrecorder.start();
             break;
+         case "bar-debug":
+            return response(barDebug());
          case "peek":
             peek(args[1] !== "stop");
             break;
