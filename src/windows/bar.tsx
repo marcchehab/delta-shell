@@ -6,6 +6,7 @@ import { createState, onCleanup } from "gnim";
 import app from "ags/gtk4/app";
 import giCairo from "cairo";
 import { timeout } from "ags/time";
+import { Workspaces } from "../modules/bar/items/workspaces";
 const { position, modules, autohide } = config.bar;
 const { spacing } = theme.bar;
 const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor;
@@ -14,9 +15,26 @@ const [windowsVisible, windowsVisible_set] = createState<string[]>([]);
 // autohide: the trigger window on each monitor's edge reveals that monitor's bar
 const autohideBars = new Map<
    Gdk.Monitor,
-   { reveal: () => void; scheduleHide: () => void }
+   { reveal: () => void; scheduleHide: (delay?: number) => void }
 >();
 const ghosts = new Map<Gdk.Monitor, Astal.Window>();
+const [barRevealed, barRevealed_set] = createState(false);
+
+// hold-to-show: `peek start` reveals every bar after peek-delay, `peek stop` hides
+let peekTimer: ReturnType<typeof timeout> | null = null;
+
+export function peek(start: boolean) {
+   peekTimer?.cancel();
+   peekTimer = null;
+   if (start) {
+      peekTimer = timeout(config.bar["peek-delay"], () => {
+         peekTimer = null;
+         autohideBars.forEach((b) => b.reveal());
+      });
+   } else {
+      autohideBars.forEach((b) => b.scheduleHide(0));
+   }
+}
 
 function anchor() {
    switch (position) {
@@ -84,15 +102,17 @@ export function BarWindow({
       hideTimer?.cancel();
       hideTimer = null;
       bar.show();
+      barRevealed_set(true);
       ghosts.get(gdkmonitor)?.hide();
    }
 
-   function scheduleHide() {
+   function scheduleHide(delay = 400) {
       hideTimer?.cancel();
-      hideTimer = timeout(400, () => {
+      hideTimer = timeout(delay, () => {
          hideTimer = null;
          if (hovered || windowsVisible.get().length > 0) return;
          bar.hide();
+         barRevealed_set(false);
          ghosts.get(gdkmonitor)?.show();
       });
    }
@@ -167,6 +187,52 @@ export function BarGhostWindow({
          }}
       >
          <BarModule gdkmonitor={gdkmonitor} ghost />
+      </window>
+   );
+}
+
+// floating workspaces pill: translucent and click-through, solid and
+// clickable while the bar is revealed
+export function WorkspacesPillWindow({
+   gdkmonitor,
+   $,
+}: JSX.IntrinsicElements["window"] & { gdkmonitor: Gdk.Monitor }) {
+   const pos = config.bar["workspaces-pill"];
+   const pillAnchor = {
+      top: TOP,
+      "top-left": TOP | LEFT,
+      "top-right": TOP | RIGHT,
+      bottom: BOTTOM,
+   }[pos as "top"];
+
+   return (
+      <window
+         visible
+         name={windows_names.workspaces_pill}
+         namespace={windows_names.workspaces_pill}
+         class={barRevealed((r) =>
+            r ? `${windows_names.workspaces_pill} revealed` : windows_names.workspaces_pill,
+         )}
+         gdkmonitor={gdkmonitor}
+         exclusivity={Astal.Exclusivity.IGNORE}
+         layer={Astal.Layer.OVERLAY}
+         anchor={pillAnchor}
+         application={app}
+         $={(self) => {
+            if ($) $(self);
+            const setInput = (revealed: boolean) =>
+               self
+                  .get_native()
+                  ?.get_surface()
+                  ?.set_input_region(revealed ? null : new giCairo.Region());
+            setInput(barRevealed.get());
+            const unsub = barRevealed.subscribe(() => setInput(barRevealed.get()));
+            onCleanup(unsub);
+         }}
+      >
+         <box class={"pill"}>
+            <Workspaces gdkmonitor={gdkmonitor} vertical={false} />
+         </box>
       </window>
    );
 }

@@ -12,6 +12,10 @@ export const config = mkOptions(configFile, {
       position: "top" as "top" | "bottom" | "left" | "right",
       autohide: false,
       "autohide-ghost": false,
+      // floating workspaces pill, independent of the bar ("" = off)
+      "workspaces-pill": "" as "" | "top" | "top-left" | "top-right" | "bottom",
+      // `delta-shell peek start|stop`: hold-to-show delay for the autohidden bar
+      "peek-delay": 300,
       modules: {
          start: ["launcher", "workspaces"],
          center: ["clock"],

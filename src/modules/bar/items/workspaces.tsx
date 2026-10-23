@@ -9,9 +9,22 @@ import {
 } from "@/src/lib/utils";
 import { icons } from "@/src/lib/icons";
 import BarItem, { FunctionsList } from "@/src/widgets/baritem";
-import { isVertical, orientation } from "../bar";
+import { isVertical as barIsVertical } from "../bar";
 
-export function Workspaces({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
+export function Workspaces({
+   gdkmonitor,
+   vertical = barIsVertical,
+}: {
+   gdkmonitor: Gdk.Monitor;
+   // the floating pill lays out horizontally whatever the bar position
+   vertical?: boolean;
+}) {
+   const isVertical = vertical;
+   const orientation = vertical
+      ? Gtk.Orientation.VERTICAL
+      : Gtk.Orientation.HORIZONTAL;
+   const position = vertical ? config.bar.position : "top";
+
    if (!compositor.isHyprland() && !compositor.isNiri()) {
       console.warn("Bar: workspaces module skipped: no compositor available");
       return <box visible={false} />;
@@ -52,16 +65,16 @@ export function Workspaces({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
          : "{icon}";
 
       const indicatorValign =
-         config.bar.position === "top"
+         position === "top"
             ? Gtk.Align.START
-            : config.bar.position === "bottom"
+            : position === "bottom"
               ? Gtk.Align.END
               : Gtk.Align.CENTER;
 
       const indicatorHalign =
-         config.bar.position === "left"
+         position === "left"
             ? Gtk.Align.START
-            : config.bar.position === "right"
+            : position === "right"
               ? Gtk.Align.END
               : Gtk.Align.CENTER;
 

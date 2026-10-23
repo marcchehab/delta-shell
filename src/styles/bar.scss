@@ -1,6 +1,7 @@
 // the ghost reuses the bar module styles, overridden further down
 window#bar,
-window#barghost {
+window#barghost,
+window#workspacespill {
   all: unset;
   color: $fg0;
   font-size: $font-size;
@@ -384,5 +385,33 @@ window#bartrigger {
     min-width: 2px;
     min-height: 2px;
     background: rgba(0, 0, 0, 0.01);
+  }
+}
+
+window#workspacespill {
+  all: unset;
+  background: transparent;
+  color: $fg0;
+  font-size: $font-size;
+  opacity: 0.55;
+  transition: opacity 150ms;
+
+  &.revealed {
+    opacity: 1;
+  }
+
+  .pill {
+    margin: 6px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    background: rgba($bar-bg, 0.85);
+    border: $bar-border-width solid $bar-border-color;
+  }
+
+  // always horizontal, whatever the bar orientation
+  .workspace > .content {
+    padding: 2px 10px;
+    min-height: 0;
+    min-width: 0;
   }
 }

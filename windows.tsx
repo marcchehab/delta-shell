@@ -3,6 +3,7 @@ import {
   BarShadowWindow,
   BarTriggerWindow,
   BarWindow,
+  WorkspacesPillWindow,
 } from "./src/windows/bar";
 import app from "ags/gtk4/app";
 import { config, theme } from "./options";
@@ -29,6 +30,7 @@ export const windows_names = {
   bar_shadow: "barshadow",
   bar_trigger: "bartrigger",
   bar_ghost: "barghost",
+  workspaces_pill: "workspacespill",
   applauncher: "applauncher",
   notifications_popup: "notificationspopup",
   quicksettings: "quicksettings",
@@ -51,6 +53,7 @@ export function hideWindows() {
     windows_names.bar_shadow,
     windows_names.bar_trigger,
     windows_names.bar_ghost,
+    windows_names.workspaces_pill,
     windows_names.osd,
   ];
 
@@ -97,6 +100,12 @@ export function windows() {
         />
         {config.bar.autohide && config.bar["autohide-ghost"] && (
           <BarGhostWindow
+            gdkmonitor={monitor}
+            $={(self) => onCleanup(() => self.destroy())}
+          />
+        )}
+        {config.bar["workspaces-pill"] && (
+          <WorkspacesPillWindow
             gdkmonitor={monitor}
             $={(self) => onCleanup(() => self.destroy())}
           />
