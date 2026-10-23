@@ -19,6 +19,8 @@ const autohideBars = new Map<
 >();
 const ghosts = new Map<Gdk.Monitor, Astal.Window>();
 const [barRevealed, barRevealed_set] = createState(false);
+// the revealed pill keeps the bars up while hovered, like the bar itself
+let pillHovered = false;
 
 // hold-to-show: `peek start` reveals every bar after peek-delay, `peek stop` hides
 let peekTimer: ReturnType<typeof timeout> | null = null;
@@ -110,7 +112,8 @@ export function BarWindow({
       hideTimer?.cancel();
       hideTimer = timeout(delay, () => {
          hideTimer = null;
-         if (hovered || windowsVisible.get().length > 0) return;
+         if (hovered || pillHovered || windowsVisible.get().length > 0)
+            return;
          bar.hide();
          barRevealed_set(false);
          ghosts.get(gdkmonitor)?.show();
@@ -230,6 +233,13 @@ export function WorkspacesPillWindow({
             onCleanup(unsub);
          }}
       >
+         <Gtk.EventControllerMotion
+            onEnter={() => (pillHovered = true)}
+            onLeave={() => {
+               pillHovered = false;
+               autohideBars.forEach((b) => b.scheduleHide());
+            }}
+         />
          <box class={"pill"}>
             <Workspaces gdkmonitor={gdkmonitor} vertical={false} />
          </box>
