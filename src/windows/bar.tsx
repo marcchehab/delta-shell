@@ -211,7 +211,7 @@ export function WorkspacesPillWindow({
          name={windows_names.workspaces_pill}
          namespace={windows_names.workspaces_pill}
          class={barRevealed((r) =>
-            r ? `${windows_names.workspaces_pill} revealed` : windows_names.workspaces_pill,
+            [windows_names.workspaces_pill, pos, r ? "revealed" : ""].join(" "),
          )}
          gdkmonitor={gdkmonitor}
          exclusivity={Astal.Exclusivity.IGNORE}

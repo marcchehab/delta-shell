@@ -392,7 +392,7 @@ window#workspacespill {
   all: unset;
   background: transparent;
   color: $fg0;
-  font-size: $font-size;
+  font-size: $font-size * 0.85;
   opacity: 0.55;
   transition: opacity 150ms;
 
@@ -400,17 +400,26 @@ window#workspacespill {
     opacity: 1;
   }
 
+  // tab hanging from the screen edge: no margin, only the outer corners rounded
   .pill {
-    margin: 6px;
-    padding: 3px 6px;
-    border-radius: 999px;
+    margin: 0;
+    padding: 0 4px 2px;
+    border-radius: 0 0 10px 10px;
     background: rgba($bar-bg, 0.85);
     border: $bar-border-width solid $bar-border-color;
+    border-top: none;
+  }
+
+  &.bottom .pill {
+    padding: 2px 4px 0;
+    border-radius: 10px 10px 0 0;
+    border-top: $bar-border-width solid $bar-border-color;
+    border-bottom: none;
   }
 
   // always horizontal, whatever the bar orientation
   .workspace > .content {
-    padding: 2px 10px;
+    padding: 0 5px;
     min-height: 0;
     min-width: 0;
   }
