@@ -10,6 +10,7 @@ export function Microphone() {
    const conf = config.bar.modules.microphone;
    const microphone = AstalWp.get_default()?.get_default_microphone();
    const volume = createBinding(microphone, "volume");
+   const muted = createBinding(microphone, "mute");
 
    return (
       <BarItem
@@ -23,7 +24,10 @@ export function Microphone() {
             icon: (
                <image
                   hexpand={isVertical}
-                  iconName={icons.microphone.default}
+                  class={muted((m) => (m ? "microphone muted" : "microphone live"))}
+                  iconName={muted((m) =>
+                     m ? icons.microphone.muted : icons.microphone.default,
+                  )}
                   pixelSize={theme["icon-size"].normal}
                />
             ),

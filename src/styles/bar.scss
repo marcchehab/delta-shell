@@ -192,6 +192,13 @@ window#barghost {
     }
   }
 
+  .microphone.live {
+    color: $red;
+  }
+  .microphone.muted {
+    opacity: 0.4;
+  }
+
   .record-indicator {
     animation-name: blink;
     animation-duration: 0.5s;
