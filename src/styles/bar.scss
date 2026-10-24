@@ -416,11 +416,22 @@ window#workspacespill {
   background: transparent;
   color: $fg0;
   font-size: $font-size * 0.85;
-  opacity: 0.55;
-  transition: opacity 150ms;
 
-  &.revealed {
-    opacity: 1;
+  // faded when idle, but the workspace shown on this monitor stays fully
+  // opaque so it pops; window opacity would cap the children, so fade per part
+  .pill,
+  .workspace {
+    transition: all 150ms;
+  }
+
+  &:not(.revealed) {
+    .pill {
+      background: rgba($bar-bg, 0.85 * 0.55);
+      border-color: rgba($bar-border-color, 0.55);
+    }
+    .workspace:not(.visible) {
+      opacity: 0.55;
+    }
   }
 
   // tab hanging from the screen edge: no margin, only the outer corners rounded
