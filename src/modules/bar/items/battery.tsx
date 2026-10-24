@@ -10,6 +10,9 @@ export function Battery() {
    const conf = config.bar.modules.battery;
    const battery = AstalBattery.get_default();
    const percentage = createBinding(battery, "percentage");
+   const level = percentage((v) =>
+      v > 0.6 ? "level-high" : v >= 0.2 ? "level-mid" : "level-low",
+   );
 
    return (
       <BarItem
@@ -22,6 +25,7 @@ export function Battery() {
          data={{
             icon: (
                <image
+                  class={level}
                   hexpand={isVertical}
                   pixelSize={theme["icon-size"].normal}
                   iconName={BatteryIcon}
@@ -29,6 +33,7 @@ export function Battery() {
             ),
             percent: (
                <label
+                  class={level}
                   label={percentage((v) => Math.floor(v * 100).toString())}
                   hexpand={isVertical}
                />
