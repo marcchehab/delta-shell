@@ -170,13 +170,14 @@ export default function BarItem({
    onMiddleClick = "default",
    onScrollUp = "default",
    onScrollDown = "default",
+   class: extraClass,
    ...rest
 }: BarItemProps) {
    const content = format ? parseFormat(format, data) : children;
 
    return (
       <box
-         class={"bar-item"}
+         class={extraClass ? `bar-item ${extraClass}` : "bar-item"}
          $={(self) => {
             if (window) {
                const appconnect = app.connect("window-toggled", (_, win) => {

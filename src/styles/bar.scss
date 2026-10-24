@@ -200,6 +200,13 @@ window#workspacespill {
     opacity: 0.4;
   }
 
+  // "55%" side by side is wider than a vertical bar
+  @if $bar-vertical {
+    .battery label {
+      font-size: $font-size * 0.75;
+    }
+  }
+
   .record-indicator {
     animation-name: blink;
     animation-duration: 0.5s;

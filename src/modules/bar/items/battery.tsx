@@ -13,6 +13,7 @@ export function Battery() {
 
    return (
       <BarItem
+         class={"battery"}
          window={windows_names.power}
          onPrimaryClick={conf["on-click"]}
          onSecondaryClick={conf["on-click-right"]}
